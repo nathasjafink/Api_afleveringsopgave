@@ -1,29 +1,28 @@
 from flask import Flask, jsonify, request
-from data_dict_simple import simple
-from members import read, reset_db
+from members import read, reset_db, delete_user, create_user_in_db
+
 
 app = Flask(__name__)
 
-# function to remove based on the ids
-def remove_by_id(data, id_to_remove):
-    data = [item for item in data if data['id'] != id_to_remove]
 
-# routes
+# Routes
+# Reads the db
 @app.route('/members')
 def read_all():
-    return jsonify(simple)
+    return jsonify(read())
 
+# Create user in the db
 @app.route('/members', methods=['POST'])
 def create():
     data = request.get_json()
-    simple.append(data)
-    return jsonify(simple), 201
+    create_user_in_db()
+    return jsonify(read), 201
 
-
-@app.route('/members/<int:id_to_remove', methods=['DELETE'])
+# Delete in the db by id 
+@app.route('/members/<int:id_to_remove>', methods=['DELETE'])
 def delete_member(id_to_remove):
     try:
-        rows_affected = remove_by_id(id_to_remove)
+        rows_affected = delete_user(id_to_remove)
         if rows_affected == 0:
             return jsonify({"error": "Member not found"}), 404
         return jsonify({"message": "Member deleted succesfully"}), 200
@@ -36,6 +35,30 @@ def delete_member(id_to_remove):
 def reset():
     reset_db()
     return jsonify(read())
+
+# Update users information in db 
+@app.route('/members/<int:id>', methods=['PUT'])
+def update_user(id):
+    member_data = request.get_json()
+    if not member_data:
+        return jsonify({"error": "Invalid data"}), 400
+    
+    rows_affected = update_user(id, member_data)
+    if rows_affected == 0:
+        return jsonify({"error": "Member not found"}), 404
+    
+    return jsonify({"message": "Member updated successfully"}), 200
+
+
+# Patch 
+@app.route('/members/<int:id>/toggle-active', methods=['PATCH'])
+def toggle_member_active_status (id):
+    rows_affected = toggle_member_active_status(id)
+
+    if rows_affected == 0:
+        return jsonify({"error": "Member not found"}), 404
+    
+    return jsonify({"message": "Member active status toggled successfully"}), 200
 
 app.run()
 
