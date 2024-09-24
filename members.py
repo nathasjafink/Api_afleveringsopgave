@@ -65,19 +65,34 @@ def delete_user(id_to_remove):
         rows_affected = cur.rowcount
         return rows_affected  
 
-def update_user (id, member_data):
+def update_member_in_db (id, member_data):
     with sqlite3.connect('members.db') as conn:
         cur = conn.cursor()
 
+        # Gets the current values for the member 
+        cur.execute('SELECT * FROM members WHERE id = ?', (id,))
+        current_member = cur.fetchone()
+
+        # get the current values in the db and use the existing if it's not all values there have to be changed.
+        # Therefore you can change only some of the values without getting an error. 
+        updated_first_name = member_data.get('first_name', current_member[1])  # First name is index 1 in the result set
+        updated_last_name = member_data.get('last_name', current_member[2])  # Last name is index 2
+        updated_birth_date = member_data.get('birth_date', current_member[3])  # Birth date is index 3
+        updated_gender = member_data.get('gender', current_member[4])  # Gender is index 4
+        updated_email = member_data.get('email', current_member[5])  # Email is index 5
+        updated_phonenumber = member_data.get('phonenumber', current_member[6])  # Phone number is index 6
+        updated_address = member_data.get('address', current_member[7])  # Address is index 7
+        updated_nationality = member_data.get('nationality', current_member[8])  # Nationality is index 8
+        updated_active = member_data.get('active', current_member[9])  # Active status is index 9
+        updated_github_username = member_data.get('github_username', current_member[10])  # GitHub username is index 10
+
         cur.execute('''
-        UPDATE members
-        SET first_name = ?, last_name = ?, birth_date = ?, gender = ?, email = ?,
-            phonenumber = ?, address = ?, nationality = ?, active = ?, github_username = ?
-        WHERE id = ?
-    ''', (member_data['first_name'], member_data['last_name'], member_data['birth_date'],
-          member_data['gender'], member_data['email'], member_data['phonenumber'],
-          member_data['address'], member_data['nationality'], member_data['active'],
-          member_data['github_username'], id))
+            UPDATE members
+            SET first_name = ?, last_name = ?, birth_date = ?, gender = ?, email = ?,
+                phonenumber = ?, address = ?, nationality = ?, active = ?, github_username = ?
+            WHERE id = ?
+        ''', (updated_first_name, updated_last_name, updated_birth_date, updated_gender, updated_email,
+              updated_phonenumber, updated_address, updated_nationality, updated_active, updated_github_username, id))
         
         rows_affected = cur.rowcount
         return rows_affected
