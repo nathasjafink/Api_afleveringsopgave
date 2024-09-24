@@ -1,4 +1,5 @@
 import sqlite3
+import requests
 from data_dict import create_random_user
 
 def create_table():
@@ -97,14 +98,48 @@ def update_member_in_db (id, member_data):
         rows_affected = cur.rowcount
         return rows_affected
     
-def toggle_member_active_status (id):
+def toggle_member_active_status_in_db (id):
      with sqlite3.connect('members.db') as conn:
         cur = conn.cursor()
-        cur.execute('''
-        UPDATE members
-        SET active = NOT active
-        WHERE id = ?
-    ''', (id,))
+        
+        cur.execute('SELECT active FROM members WHERE id = ?', (id,))
+        result = cur.fetchone()
+
+        # if member is not found it remains 0 as in not active
+        if result is None:
+            return 0  
+        
+        # Toggle the active status
+        current_active_status = result[0]
+        new_active_status = not current_active_status  
+        
+        cur.execute('UPDATE members SET active = ? WHERE id = ?', (new_active_status, id))
         
         rows_affected = cur.rowcount
         return rows_affected
+     
+
+# GitHub API
+def get_member_by_id(member_id):
+    with sqlite3.connect('members.db') as conn:
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM members WHERE id = ?', (member_id,))
+        row = cur.fetchone
+
+        if row is None:
+            return None
+        
+        member = {
+            'id': row[0],
+            'first_name': row[1],
+            'last_name': row[2],
+            'birth_date': row[3],
+            'gender': row[4],
+            'email': row[5],
+            'phonenumber': row[6],
+            'address': row[7],
+            'nationality': row[8],
+            'active': row[9],
+            'github_username': row[10]
+        }
+        return member

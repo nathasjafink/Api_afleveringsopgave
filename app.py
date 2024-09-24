@@ -1,9 +1,13 @@
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request
-from members import read, reset_db, delete_user, create_user_in_db, update_member_in_db
-
+from members import read, reset_db, delete_user, create_user_in_db, update_member_in_db, toggle_member_active_status_in_db, get_member_by_id
+import os
+from services import fetch_github_repos
 
 app = Flask(__name__)
 
+load_dotenv()
+token = os.getenv('GITHUB_ACCESS_TOKEN')
 
 # Routes
 # Reads the db
@@ -54,14 +58,39 @@ def update_member(id):
 # Toggle members active status
 @app.route('/members/<int:id>/toggle-active', methods=['PATCH'])
 def toggle_member_active_status (id):
-    rows_affected = toggle_member_active_status(id)
+    rows_affected = toggle_member_active_status_in_db(id)
 
     if rows_affected == 0:
         return jsonify({"error": "Member not found"}), 404
     
     return jsonify({"message": "Member active status toggled successfully"}), 200
 
+#GitHub API
+def get_member_repos(id):
+    member = get_member_by_id(id)
+     
+    if not member:
+        return jsonify({"error": "Member not found"}), 404
+    
+    github_username = member.get('github_username')
+    
+    if not github_username:
+        return jsonify({"error": "GitHub username not found"}), 400
+    
+    if github_username == "your_github_username":
+        token = token
+        repos = fetch_github_repos(github_username, token=token)
+    
+    else: 
+        repos = fetch_github_repos(github_username)
+    
+    if repos is None:
+        return jsonify({"error": "Could not fetch repositories"}), 500
+    
+    return jsonify(repos), 200
+
 app.run()
+
 
 
 
