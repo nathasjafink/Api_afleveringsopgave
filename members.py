@@ -1,5 +1,4 @@
 import sqlite3
-import requests
 from data_dict import create_random_user
 
 def create_table():
