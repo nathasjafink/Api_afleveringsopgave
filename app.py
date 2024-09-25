@@ -65,7 +65,8 @@ def toggle_member_active_status (id):
     
     return jsonify({"message": "Member active status toggled successfully"}), 200
 
-#GitHub API
+# GitHub API
+# id nummer 3 er mit eget brugernavn fra github
 @app.route('/members/<int:id>/repos', methods=['GET'])
 def get_member_repos(id):
     member = get_member_by_id(id)
