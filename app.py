@@ -7,7 +7,7 @@ from services import fetch_github_repos
 app = Flask(__name__)
 
 load_dotenv()
-token = os.getenv('GITHUB_ACCESS_TOKEN')
+github_token = os.getenv('GITHUB_ACCESS_TOKEN')
 
 # Routes
 # Reads the db
@@ -79,14 +79,14 @@ def get_member_repos(id):
         return jsonify({"error": "GitHub username not found"}), 400
     
     if github_username == "your_github_username":
-        token = token
-        repos = fetch_github_repos(github_username, token=token)
+        repos = fetch_github_repos(github_username, token=github_token)
     
     else: 
         repos = fetch_github_repos(github_username)
     
     if repos is None:
         return jsonify({"error": "Could not fetch repositories"}), 500
+    
     
     return jsonify(repos), 200
 

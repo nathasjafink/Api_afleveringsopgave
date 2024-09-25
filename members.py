@@ -124,7 +124,7 @@ def get_member_by_id(member_id):
     with sqlite3.connect('members.db') as conn:
         cur = conn.cursor()
         cur.execute('SELECT * FROM members WHERE id = ?', (member_id,))
-        row = cur.fetchone
+        row = cur.fetchone()
 
         if row is None:
             return None
