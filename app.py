@@ -66,6 +66,7 @@ def toggle_member_active_status (id):
     return jsonify({"message": "Member active status toggled successfully"}), 200
 
 #GitHub API
+@app.route('/members/<int:id>/repos', methods=['GET'])
 def get_member_repos(id):
     member = get_member_by_id(id)
      
